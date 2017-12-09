@@ -1,10 +1,12 @@
 package com.homework5.haddock;
 
-import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
+
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -15,14 +17,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void fetchSwearing(View view) {
-        String newCitation = "Bomber och granater, du tryckte på knappen...\nHär tror du att du ska få snack och strunt och snack, nej nu går skam över torra land, skäms landkrabba!";
-        changeCitation(view, newCitation);
-
+        new FetchCitation().execute();
     }
 
-    public void changeCitation(View view, String newMessage) {
+    public void changeCitation(String newMessage) {
         TextView textView = findViewById(R.id.citationBox);
-        CharSequence initialShout = view.getContext().getText(R.string.initial_shout);
+        CharSequence initialShout = textView.getContext().getText(R.string.initial_shout);
         if(textView.getText().equals(initialShout))
             textView.setText(newMessage);
         else
@@ -30,7 +30,27 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private class FetchCitation extends AsyncTask<Void, Void, String> {
 
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            String citation = "Snack och strunt och snack, det var inte det här vi ville ha.";
+            try {
+                WordHandler wh = new WordHandler();
+                citation = wh.randomWord();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return citation;
+        }
+
+        @Override
+        protected void onPostExecute(String msg) {
+            changeCitation(msg);
+        }
+
+    }
 
 }
 

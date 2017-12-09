@@ -1,3 +1,5 @@
+package com.homework5.haddock;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -30,9 +32,9 @@ class WordHandler {
     }
 
     public void printFullList(){
-        for(int i = 0; i < words.length; i++){
+        for (String word : words) {
             System.out.print("\"");
-            System.out.print(words[i]);
+            System.out.print(word);
             System.out.println("\"");
         }
 

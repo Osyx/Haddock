@@ -3,6 +3,8 @@ package com.homework5.haddock;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -10,25 +12,24 @@ class WordHandler {
     private String[] words;
 
 
-    public WordHandler() throws IOException {
-        createList();
+    public WordHandler(InputStream file) throws IOException {
+        createList(file);
     }
 
-    private void createList() throws IOException {
-        FileReader fileReader = new FileReader(new java.io.File("words.txt"));
-        BufferedReader bufferedReader = new BufferedReader(fileReader);
+    private void createList(InputStream file) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(file));
         String line;
         ArrayList<String> tempList = new ArrayList<>();
         while ((line = bufferedReader.readLine()) != null) {
             tempList.add(line);
         }
         words = tempList.toArray(new String[0]);
-        fileReader.close();
+        bufferedReader.close();
     }
 
-    public String randomWord() {
+    String randomWord() {
         int randomNum = ThreadLocalRandom.current().nextInt(0, words.length);
-        return "\"" + words[randomNum] + "\"";
+        return "\"" + words[randomNum] + "!\"";
     }
 
     public void printFullList(){

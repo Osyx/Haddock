@@ -22,11 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void changeCitation(String newMessage) {
         TextView textView = findViewById(R.id.citationBox);
-        CharSequence initialShout = textView.getContext().getText(R.string.initial_shout);
-        if(textView.getText().equals(initialShout))
-            textView.setText(newMessage);
-        else
-            textView.setText(initialShout);
+        textView.setText(newMessage);
 
     }
 
@@ -37,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(Void... voids) {
             String citation = "Snack och strunt och snack, det var inte det här vi ville ha.";
             try {
-                WordHandler wh = new WordHandler();
+                WordHandler wh = new WordHandler(getResources().openRawResource(R.raw.words));
                 citation = wh.randomWord();
             } catch (IOException e) {
                 e.printStackTrace();

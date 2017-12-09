@@ -5,7 +5,7 @@
     android:id="@+id/main_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/ic_haddockshout"
+    android:background="@drawable/ic_haddock_shout"
     tools:context="com.homework5.haddock.MainActivity">
 
     <LinearLayout
@@ -71,7 +71,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/ic_captainhaddock" />
+            app:srcCompat="@drawable/ic_captain_haddock" />
 
     </LinearLayout>
 

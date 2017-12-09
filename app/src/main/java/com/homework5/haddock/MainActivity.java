@@ -31,12 +31,12 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Void... voids) {
-            String citation = "Snack och strunt och snack, det var inte det här vi ville ha.";
+            String citation;
             try {
                 WordHandler wh = new WordHandler(getResources().openRawResource(R.raw.words));
                 citation = wh.randomWord();
             } catch (IOException e) {
-                e.printStackTrace();
+                citation = "Nä nu blommar asfalten och skam går på torra land, det blev något knas på skutan...";
             }
             return citation;
         }

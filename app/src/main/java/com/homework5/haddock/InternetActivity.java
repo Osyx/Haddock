@@ -6,7 +6,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
-public class InteretActivity extends FragmentActivity implements DownloadCallback {
+public class InternetActivity extends FragmentActivity implements DownloadCallback {
 
     // Keep a reference to the NetworkFragment, which owns the AsyncTask object
     // that is used to execute network ops.
@@ -16,7 +16,7 @@ public class InteretActivity extends FragmentActivity implements DownloadCallbac
     // downloads with consecutive button clicks.
     private boolean mDownloading = false;
 
-    public InteretActivity() {
+    public InternetActivity() {
         mNetworkFragment = NetworkFragment.getInstance(getFragmentManager(), "https://www.google.com");
     }
 

@@ -37,9 +37,6 @@ public class MainActivity extends AppCompatActivity {
         }
         TextView textView = findViewById(R.id.citationBox);
         textView.setText(newMessage);
-        while(true)
-            Log.wtf(TAG, "looping");
-
     }
 
     private class FetchCitation extends AsyncTask<Void, Void, String> {

@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/src/Haddock.iml" filepath="$PROJECT_DIR$/src/Haddock.iml" />
       <module fileurl="file://$PROJECT_DIR$/Haddock.iml" filepath="$PROJECT_DIR$/Haddock.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>

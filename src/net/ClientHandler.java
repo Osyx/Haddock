@@ -43,7 +43,7 @@ class ClientHandler implements Runnable {
     }
 
     void sendMsg(ByteBuffer msg) throws ServerException, IOException {
-        clientChannel.write(msg);
+        clientChannel.write(ByteBuffer.wrap("Pelle".getBytes()));
         if (msg.hasRemaining()) {
             throw new ServerException("Could not send message");
         }

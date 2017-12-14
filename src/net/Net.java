@@ -10,8 +10,8 @@ import java.util.Iterator;
 
 class Net {
     private final int LINGER_TIME = 0;
-    private final int PORT_NUMBER = 5555;
-    private final String HOSTNAME = "localhost";
+    private final int PORT_NUMBER = 8080;
+    private final String HOSTNAME = "192.168.10.218";
     private final String EXIT_MESSAGE = "CLOSE";
     private final String FORCE_EXIT_MESSAGE = "FORCE CLOSE";
     private ServerSocketChannel listeningSocketChannel;
@@ -41,9 +41,12 @@ class Net {
                         continue;
                     if (key.isAcceptable()) {
                         acceptClient(key);
+                        System.out.println("Is accept");
                     } else if (key.isReadable()) {
+                        System.out.println("Is read");
                         recieveMsg(key);
                     } else if (key.isWritable()) {
+                        //System.out.println("Is write");
                         sendMsg(key);
                     }
                 }

@@ -14,11 +14,9 @@ import android.widget.Toast;
 import com.homework5.haddock.network.DownloadCallback;
 import com.homework5.haddock.network.NetworkFragment;
 
-import java.io.IOException;
-
 public class MainActivity extends AppCompatActivity implements DownloadCallback {
     private static final String TAG = "MainActivity";
-    private String URL = "http://osyx.azurewebsites.net/haddock/words.txt";
+    private String HOST_URL = "localhost";
     private String WORD_ERROR = "Something went wrong during word generation.";
     private String NO_NETWORK_MSG = "No network detected, fetching locally...";
     private NetworkFragment mNetworkFragment;
@@ -29,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mNetworkFragment = NetworkFragment.getInstance(getFragmentManager(), "https://www.google.com");
+        mNetworkFragment = NetworkFragment.getInstance(getFragmentManager(), HOST_URL);
 
     }
 

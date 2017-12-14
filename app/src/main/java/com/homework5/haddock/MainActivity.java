@@ -3,7 +3,6 @@ package com.homework5.haddock;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -16,7 +15,7 @@ import com.homework5.haddock.network.NetworkFragment;
 
 public class MainActivity extends AppCompatActivity implements DownloadCallback {
     private static final String TAG = "MainActivity";
-    private String HOST_URL = "localhost";
+    private String HOST_URL = "http://192.168.10.218:8080";
     private String WORD_ERROR = "Something went wrong during word generation.";
     private String NO_NETWORK_MSG = "No network detected, fetching locally...";
     private NetworkFragment mNetworkFragment;
@@ -28,11 +27,14 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mNetworkFragment = NetworkFragment.getInstance(getFragmentManager(), HOST_URL);
-
     }
 
     public void fetchSwearing(View view) {
-        new FetchCitation().execute();
+        NetworkInfo networkInfo = getActiveNetworkInfo();
+        if(networkInfo != null)
+            startDownload();
+        else
+            updateFromDownload(null);
     }
 
     public void changeCitation(String newMessage) {
@@ -46,7 +48,6 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
 
     private void startDownload() {
         if (!mDownloading && mNetworkFragment != null) {
-            // Execute the async download.
             mNetworkFragment.startDownload();
             mDownloading = true;
         }
@@ -55,21 +56,24 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
 
     @Override
     public void updateFromDownload(Object result) {
-        // Update your UI here based on result of download.
+        String citation = (String) result;
+        if(citation == null) {
+            citation = "Nä nu blommar asfalten och skam går på torra land, det blev något knas på skutan...";
+            Log.e(TAG, WORD_ERROR);
+        }
+        changeCitation(citation);
     }
 
     @Override
     public NetworkInfo getActiveNetworkInfo() {
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        return networkInfo;
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        return connectivityManager != null ? connectivityManager.getActiveNetworkInfo() : null;
     }
 
     @Override
     public void onProgressUpdate(int progressCode, int percentComplete) {
+        Toast.makeText(getApplicationContext(), percentComplete + "%", Toast.LENGTH_SHORT).show();
         switch(progressCode) {
-            // You can add UI behavior for progress updates here.
             case Progress.ERROR:
                 Toast.makeText(getApplicationContext(), "Progress error", Toast.LENGTH_LONG).show();
                 break;
@@ -94,30 +98,6 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
         if (mNetworkFragment != null) {
             mNetworkFragment.cancelDownload();
         }
-    }
-
-
-    private class FetchCitation extends AsyncTask<Void, Void, String> {
-
-        @Override
-        protected String doInBackground(Void... voids) {
-            String citation;
-            try {
-                ConnectivityManager connMgr = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-                NetworkInfo networkInfo = connMgr != null ? connMgr.getActiveNetworkInfo() : null;
-                citation = "************************************* WORD FETCHED FROM SERVER **************************************";
-            } catch (Exception e) {
-                citation = "Nä nu blommar asfalten och skam går på torra land, det blev något knas på skutan...";
-                Log.e(TAG, WORD_ERROR);
-            }
-            return citation;
-        }
-
-        @Override
-        protected void onPostExecute(String msg) {
-            changeCitation(msg);
-        }
-
     }
 
 }

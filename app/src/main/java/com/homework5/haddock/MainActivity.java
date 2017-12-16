@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     @Override
     public void updateFromDownload(Object result) {
         String citation = (String) result;
+        Log.d(TAG, "citation: " + citation);
         if(citation == null) {
             citation = "Nä nu blommar asfalten och skam går på torra land, det blev något knas på skutan...";
             Log.e(TAG, WORD_ERROR);

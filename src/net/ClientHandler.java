@@ -3,6 +3,7 @@ package net;
 import controller.Controller;
 import model.ServerException;
 
+import javax.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -10,7 +11,7 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.ForkJoinPool;
 
-class ClientHandler implements Runnable {
+class ClientHandler extends HttpServlet implements Runnable {
     private final int MAX_MSG_LENGTH = 8192;
     private final SocketChannel clientChannel;
     private final ByteBuffer msgFromClient = ByteBuffer.allocateDirect(MAX_MSG_LENGTH);
@@ -22,7 +23,6 @@ class ClientHandler implements Runnable {
         messagesToSend  = new ArrayDeque<>();
         server = net;
         this.clientChannel = clientChannel;
-        initConnection();
     }
 
     @Override
@@ -30,24 +30,19 @@ class ClientHandler implements Runnable {
         try {
             server.queueMsgToSend(this, controller.getWord());
         } catch (ServerException e) {
-            System.err.println(e.getErrorMessage());
-        }
-    }
-
-    private void initConnection() {
-        try {
-            server.queueMsgToSend(this, controller.newConnection());
-        } catch (ServerException e) {
-            System.err.println(e.getErrorMessage());
+            System.err.println(e.getMessage());
         }
     }
 
     void sendMsg(ByteBuffer msg) throws ServerException, IOException {
-        clientChannel.write(ByteBuffer.wrap("Pelle".getBytes()));
+        String message = "HTTP/1.1 200 " + extractMessageFromBuffer(msg) + "\r\nContent-Type: text/plain\r\n\r\n";
+        clientChannel.write(ByteBuffer.wrap(message.getBytes()));
+        System.out.println("Wrote " + message + " to client.");
         if (msg.hasRemaining()) {
             throw new ServerException("Could not send message");
         }
     }
+
 
     void receiveMsg() throws IOException, ServerException {
         msgFromClient.clear();
@@ -63,6 +58,14 @@ class ClientHandler implements Runnable {
         byte[] bytes = new byte[msgFromClient.remaining()];
         msgFromClient.get(bytes);
         return new String(bytes);
+    }
+
+    String extractMessageFromBuffer(ByteBuffer msg) {
+        byte[] bytes = new byte[msg.remaining()];
+        msg.get(bytes);
+        String returnMsg = new String(bytes);
+        msg.flip();
+        return returnMsg;
     }
 
     void disconnectClient() throws IOException {

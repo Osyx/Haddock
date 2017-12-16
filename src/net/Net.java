@@ -3,9 +3,13 @@ package net;
 import model.ServerException;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
 class Net {
@@ -26,7 +30,7 @@ class Net {
         try {
             selector = Selector.open();
             initRecieve();
-
+            int pelle = 0;
             while (true) {
                 if (sendAll) {
                     sendAll();
@@ -43,11 +47,13 @@ class Net {
                         acceptClient(key);
                         System.out.println("Is accept");
                     } else if (key.isReadable()) {
-                        System.out.println("Is read");
+                        if(pelle++ < 10)
+                            System.out.println("Is read");
                         recieveMsg(key);
                     } else if (key.isWritable()) {
-                        //System.out.println("Is write");
+                        System.out.println("Is write");
                         sendMsg(key);
+                        key.interestOps(SelectionKey.OP_READ);
                     }
                 }
             }
@@ -81,7 +87,7 @@ class Net {
             SocketChannel clientChannel = serverSocketChannel.accept();
             clientChannel.configureBlocking(false);
             ClientHandler handler = new ClientHandler(this, clientChannel);
-            clientChannel.register(selector, SelectionKey.OP_WRITE, new Client(handler));
+            clientChannel.register(selector, SelectionKey.OP_READ, new Client(handler));
             clientChannel.setOption(StandardSocketOptions.SO_LINGER, LINGER_TIME);
         } catch (IOException e) {
             e.printStackTrace();
@@ -92,11 +98,9 @@ class Net {
         Client client = (Client) key.attachment();
         try {
             client.handler.receiveMsg();
-        } catch (IOException clientHasClosedConnection) {
+        } catch (IOException | ServerException clientHasClosedConnection) {
+            System.err.println(clientHasClosedConnection.getMessage());
             client.handler.disconnectClient();
-            key.cancel();
-        } catch (ServerException e) {
-            System.err.println(e.getErrorMessage());
         }
     }
 

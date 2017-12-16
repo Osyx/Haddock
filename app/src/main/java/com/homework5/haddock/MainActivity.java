@@ -3,7 +3,6 @@ package com.homework5.haddock;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -11,23 +10,31 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
+import com.homework5.haddock.network.DownloadCallback;
+import com.homework5.haddock.network.NetworkFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DownloadCallback {
     private static final String TAG = "MainActivity";
-    private String URL = "http://osyx.azurewebsites.net/haddock/words.txt";
+    private String HOST_URL = "http://192.168.10.218:8080";
     private String WORD_ERROR = "Something went wrong during word generation.";
     private String NO_NETWORK_MSG = "No network detected, fetching locally...";
+    private NetworkFragment mNetworkFragment;
+    private boolean mDownloading = false;
     boolean toast = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mNetworkFragment = NetworkFragment.getInstance(getFragmentManager(), HOST_URL);
     }
 
     public void fetchSwearing(View view) {
-        new FetchCitation().execute();
+        NetworkInfo networkInfo = getActiveNetworkInfo();
+        if(networkInfo != null)
+            startDownload();
+        else
+            updateFromDownload(null);
     }
 
     public void changeCitation(String newMessage) {
@@ -39,34 +46,59 @@ public class MainActivity extends AppCompatActivity {
         textView.setText(newMessage);
     }
 
-    private class FetchCitation extends AsyncTask<Void, Void, String> {
-
-        @Override
-        protected String doInBackground(Void... voids) {
-            String citation;
-            try {
-                ConnectivityManager connMgr = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-                NetworkInfo networkInfo = connMgr != null ? connMgr.getActiveNetworkInfo() : null;
-                WordHandler wh;
-                if (networkInfo != null && networkInfo.isConnected()) {
-                    wh = new WordHandler(new NetworkHandler().getPageContent(URL));
-                } else {
-                    wh = new WordHandler(getResources().openRawResource(R.raw.words));
-                    toast = true;
-                }
-                citation = wh.randomWord();
-            } catch (IOException e) {
-                citation = "Nä nu blommar asfalten och skam går på torra land, det blev något knas på skutan...";
-                Log.e(TAG, WORD_ERROR);
-            }
-            return citation;
+    private void startDownload() {
+        if (!mDownloading && mNetworkFragment != null) {
+            mNetworkFragment.startDownload();
+            mDownloading = true;
         }
+    }
 
-        @Override
-        protected void onPostExecute(String msg) {
-            changeCitation(msg);
+
+    @Override
+    public void updateFromDownload(Object result) {
+        String citation = (String) result;
+        Log.d(TAG, "citation: " + citation);
+        if(citation == null) {
+            citation = "Nä nu blommar asfalten och skam går på torra land, det blev något knas på skutan...";
+            Log.e(TAG, WORD_ERROR);
         }
+        changeCitation(citation);
+    }
 
+    @Override
+    public NetworkInfo getActiveNetworkInfo() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        return connectivityManager != null ? connectivityManager.getActiveNetworkInfo() : null;
+    }
+
+    @Override
+    public void onProgressUpdate(int progressCode, int percentComplete) {
+        Toast.makeText(getApplicationContext(), percentComplete + "%", Toast.LENGTH_SHORT).show();
+        switch(progressCode) {
+            case Progress.ERROR:
+                Toast.makeText(getApplicationContext(), "Progress error", Toast.LENGTH_LONG).show();
+                break;
+            case Progress.CONNECT_SUCCESS:
+                Toast.makeText(getApplicationContext(), "Connection success", Toast.LENGTH_LONG).show();
+                break;
+            case Progress.GET_INPUT_STREAM_SUCCESS:
+                Toast.makeText(getApplicationContext(), "Got input stream", Toast.LENGTH_LONG).show();
+                break;
+            case Progress.PROCESS_INPUT_STREAM_IN_PROGRESS:
+                Toast.makeText(getApplicationContext(), "Reading from input stream", Toast.LENGTH_LONG).show();
+                break;
+            case Progress.PROCESS_INPUT_STREAM_SUCCESS:
+                Toast.makeText(getApplicationContext(), "Read from input stream successfully", Toast.LENGTH_LONG).show();
+                break;
+        }
+    }
+
+    @Override
+    public void finishDownloading() {
+        mDownloading = false;
+        if (mNetworkFragment != null) {
+            mNetworkFragment.cancelDownload();
+        }
     }
 
 }

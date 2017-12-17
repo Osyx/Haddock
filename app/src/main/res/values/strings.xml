@@ -2,5 +2,9 @@
     <string name="app_name">Kapten Haddocks Mustiga Citat</string>
     <string name="app_label">Haddocks citat</string>
     <string name="btn_desc">Haddock</string>
+    <string name="hostname">Server Address, eg 192.168.1.1</string>
+    <string name="dialog_ok">Set new host</string>
+    <string name="dialog_cancel">Use standard</string>
     <string name="initial_shout">Du din sladderfågel, tryck på knappen för ett krämigt citat...</string>
+    <string name="hostname_info">Please enter the server you want to fetch from:</string>
 </resources>

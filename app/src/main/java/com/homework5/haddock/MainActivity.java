@@ -1,5 +1,6 @@
 package com.homework5.haddock;
 
+import android.app.DialogFragment;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -7,18 +8,20 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.homework5.haddock.network.DownloadCallback;
 import com.homework5.haddock.network.NetworkFragment;
 
-public class MainActivity extends AppCompatActivity implements DownloadCallback {
+public class MainActivity extends AppCompatActivity implements DownloadCallback, HostnameDialog.DialogListener {
     private static final String TAG = "MainActivity";
-    private String HOST_URL = "http://192.168.10.218:8080";
+    private String HOST_URL;
+    private String PLACEHOLDER_HOST = "http://192.168.10.218:8080";
     private String WORD_ERROR = "Something went wrong during word generation.";
     private String NO_NETWORK_MSG = "No network detected, fetching locally...";
-    private NetworkFragment mNetworkFragment;
+    private NetworkFragment mNetworkFragment = null;
     private boolean mDownloading = false;
     boolean toast = false;
 
@@ -26,16 +29,20 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mNetworkFragment = NetworkFragment.getInstance(getFragmentManager(), HOST_URL);
+        DialogFragment dialogFragment = new HostnameDialog();
+        dialogFragment.show(getFragmentManager(), "hostnameDialog");
     }
 
     public void fetchSwearing(View view) {
         NetworkInfo networkInfo = getActiveNetworkInfo();
         if(networkInfo != null)
             startDownload();
-        else
+        else {
+            toast = true;
             updateFromDownload(null);
+        }
     }
+
 
     public void changeCitation(String newMessage) {
         if(toast) {
@@ -57,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     @Override
     public void updateFromDownload(Object result) {
         String citation = (String) result;
-        Log.d(TAG, "citation: " + citation);
         if(citation == null) {
             citation = "Nä nu blommar asfalten och skam går på torra land, det blev något knas på skutan...";
             Log.e(TAG, WORD_ERROR);
@@ -101,5 +107,16 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
         }
     }
 
+    @Override
+    public void onDialogPositiveClick(String hostAddress) {
+        HOST_URL = "http://" + hostAddress + ":8080";
+        mNetworkFragment = NetworkFragment.getInstance(getFragmentManager(), HOST_URL);
+    }
+
+    @Override
+    public void onDialogNegativeClick() {
+        HOST_URL = PLACEHOLDER_HOST;
+        mNetworkFragment = NetworkFragment.getInstance(getFragmentManager(), HOST_URL);
+    }
 }
 

@@ -11,55 +11,46 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class Net {
     private final int LINGER_TIME = 0;
     private final int PORT_NUMBER = 8080;
-    private final String HOSTNAME = "192.168.10.218";
-    private final String EXIT_MESSAGE = "CLOSE";
-    private final String FORCE_EXIT_MESSAGE = "FORCE CLOSE";
+    private String HOSTNAME = "192.168.10.218";
     private ServerSocketChannel listeningSocketChannel;
     private Boolean sendAll = false;
     private Selector selector;
 
     public static void main(String[] args) {
-        new Net().run();
+        System.out.println("*** Haddock Server ***");
+        new Net().start();
     }
 
-    public void run() {
-        try {
-            selector = Selector.open();
-            initRecieve();
-            int pelle = 0;
-            while (true) {
-                if (sendAll) {
-                    sendAll();
-                    sendAll = false;
-                }
-                selector.select();
-                Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
-                while (iterator.hasNext()) {
-                    SelectionKey key = iterator.next();
-                    iterator.remove();
-                    if (!key.isValid())
-                        continue;
-                    if (key.isAcceptable()) {
-                        acceptClient(key);
-                        System.out.println("Is accept");
-                    } else if (key.isReadable()) {
-                        if(pelle++ < 10)
-                            System.out.println("Is read");
-                        recieveMsg(key);
-                    } else if (key.isWritable()) {
-                        System.out.println("Is write");
-                        sendMsg(key);
-                        key.interestOps(SelectionKey.OP_READ);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    static String ip_check(String ipString) {
+        String IPADDRESS_PATTERN = "(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)";
+
+        Pattern pattern = Pattern.compile(IPADDRESS_PATTERN);
+        Matcher matcher = pattern.matcher(ipString);
+        if (matcher.find()) {
+            return matcher.group();
+        } else{
+            return "0.0.0.0";
         }
+    }
+
+    private void start() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Please enter your IPv4 address:");
+        String checkedIP = ip_check(scanner.nextLine().trim());
+        if(!checkedIP.equals("0.0.0.0"))
+            setHOSTNAME(checkedIP);
+        else {
+            System.out.println("Please enter valid IP address, try again.\n");
+            start();
+        }
+        run();
     }
 
     void initRecieve() {
@@ -94,26 +85,46 @@ class Net {
         }
     }
 
+    private void run() {
+        System.out.println("\nServer running...\n");
+        try {
+            selector = Selector.open();
+            initRecieve();
+            while (true) {
+                if (sendAll) {
+                    sendAll();
+                    sendAll = false;
+                }
+                selector.select();
+                Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+                while (iterator.hasNext()) {
+                    SelectionKey key = iterator.next();
+                    iterator.remove();
+                    if (!key.isValid())
+                        continue;
+                    if (key.isAcceptable()) {
+                        acceptClient(key);
+                    } else if (key.isReadable()) {
+                        recieveMsg(key);
+                    } else if (key.isWritable()) {
+                        sendMsg(key);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     void recieveMsg(SelectionKey key) throws IOException {
         Client client = (Client) key.attachment();
         try {
             client.handler.receiveMsg();
         } catch (IOException | ServerException clientHasClosedConnection) {
-            System.err.println(clientHasClosedConnection.getMessage());
+            System.out.println(clientHasClosedConnection.getMessage());
+            System.out.println("Waiting for a new request...\n");
             client.handler.disconnectClient();
         }
-    }
-
-    void sendMsg(SelectionKey key) throws IOException {
-        Client client = (Client) key.attachment();
-        try {
-            client.sendAll();
-            key.interestOps(SelectionKey.OP_READ);
-        } catch (ServerException couldNotSendAllMessages) {
-        } catch (IOException clientHasClosedConnection) {
-                            client.handler.disconnectClient();
-                            key.cancel();
-                        }
     }
 
     void queueMsgToSend(ClientHandler clientHandler, String msg) {
@@ -124,7 +135,22 @@ class Net {
         sendAll = true;
         selector.wakeup();
     }
-    
+
+    void sendMsg(SelectionKey key) throws IOException {
+        Client client = (Client) key.attachment();
+        try {
+            client.sendAll();
+        } catch (ServerException couldNotSendAllMessages) {
+        } catch (IOException clientHasClosedConnection) {
+            client.handler.disconnectClient();
+            key.cancel();
+        }
+        key.interestOps(SelectionKey.OP_READ);
+    }
+
+    private void setHOSTNAME(String HOSTNAME) {
+        this.HOSTNAME = HOSTNAME;
+    }
 
     private class Client {
         private final ClientHandler handler;

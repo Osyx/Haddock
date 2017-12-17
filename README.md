@@ -1,5 +1,5 @@
 # Haddock
-# To use the app:
+## To use the app:
  1. Download the [HaddockServer](https://github.com/Osyx/Haddock/releases/download/v1.1/HaddockServer.zip)
  2. Unzip the downloaded file and double click on the file _run Haddock Server - **YOUR OS**_.
  3. This should launch a terminal with the output of your IPv4 address(es) and then "*** Haddock Server *** Please enter your IPv4 address:" 

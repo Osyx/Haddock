@@ -7,3 +7,8 @@
  4. Download and install the [Android app](https://github.com/Osyx/Haddock/releases/download/v1.1/kaptenhaddock_1.1.apk).
  5. Open the app, you are greeted with a dialog wanting a server address, enter the one you entered in the terminal on your computer.
  6. Done, enjoy your new vocabulary.
+
+#### Screenshots:
+Android app | Server app
+------------ | ------------
+![Android Screen](https://i.imgur.com/GtdsVLL.png)|![Terminal Screen](https://i.imgur.com/7FvH8oz.png)

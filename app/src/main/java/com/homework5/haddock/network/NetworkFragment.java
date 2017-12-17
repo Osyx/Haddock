@@ -17,7 +17,6 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class NetworkFragment extends Fragment {
     public static final String TAG = "NetworkFragment";
-
     private static final String URL_KEY = "UrlKey";
 
     private DownloadCallback mCallback;

@@ -25,7 +25,10 @@ class Net {
 
     public static void main(String[] args) {
         System.out.println("*** Haddock Server ***");
-        new Net().start();
+        if(args.length > 0)
+            new Net().start(args[0]);
+        else
+            new Net().start("");
     }
 
     static String ip_check(String ipString) {
@@ -40,15 +43,20 @@ class Net {
         }
     }
 
-    private void start() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Please enter your IPv4 address:");
-        String checkedIP = ip_check(scanner.nextLine().trim());
+    private void start(String ip) {
+        String ipString;
+        if(ip == null || ip.trim().isEmpty()) {
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Please enter your IPv4 address:");
+            ipString = scanner.nextLine().trim();
+        } else
+            ipString = ip;
+        String checkedIP = ip_check(ipString);
         if(!checkedIP.equals("0.0.0.0"))
             setHOSTNAME(checkedIP);
         else {
             System.out.println("Please enter valid IP address, try again.\n");
-            start();
+            start("");
         }
         run();
     }
